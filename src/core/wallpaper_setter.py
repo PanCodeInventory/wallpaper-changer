@@ -18,6 +18,7 @@ class WallpaperStyle(Enum):
     KEEP_ASPECT = 3   # 保持比例
     CROP = 4          # 裁剪
     SPAN = 5          # 跨屏
+    FILL = CROP       # 填充（与CROP相同）
 
 
 class WallpaperSetter:
