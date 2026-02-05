@@ -29,7 +29,7 @@ jobs:
 
     - name: Build with PyInstaller
       run: |
-        pyinstaller --onefile --windowed --name=WallpaperChanger --clean --noconfirm src/main.py
+        pyinstaller --onefile --windowed --name=WallpaperChanger --clean --noconfirm --add-data "src;src" src/main.py
 
     - name: Test built executable
       run: |
@@ -80,11 +80,11 @@ jobs:
         body: |
           ## What's Changed
 
-          This release fixes multiple critical issues:
-          - Fixed module import errors
-          - Fixed enum member assignment
-          - Simplified CI pipeline
-          - Removed dependency on CI testing
+          This release fixes critical module import issues:
+          - Fixed PyInstaller path handling
+          - Properly added src directory to Python path
+          - Added sys._MEIPASS support for frozen apps
+          - Improved error handling
 
           ## Usage
 
@@ -105,5 +105,11 @@ jobs:
           - First run requires API key configuration
           - Requires Windows 10 or later
 
+          ## Changelog
+
+          ### v0.2.1 (2026-02-05)
+          - Fixed ModuleNotFoundError for ui module
+          - Fixed PyInstaller packaging for frozen apps
+          - Improved path handling for both frozen and normal modes
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
