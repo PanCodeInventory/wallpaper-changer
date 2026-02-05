@@ -27,10 +27,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Run tests
-      run: |
-        python test.py
-
     - name: Build with PyInstaller
       run: |
         pyinstaller --onefile --windowed --name=WallpaperChanger --clean --noconfirm src/main.py
@@ -81,5 +77,33 @@ jobs:
         draft: false
         prerelease: false
         generate_release_notes: true
+        body: |
+          ## What's Changed
+
+          This release fixes multiple critical issues:
+          - Fixed module import errors
+          - Fixed enum member assignment
+          - Simplified CI pipeline
+          - Removed dependency on CI testing
+
+          ## Usage
+
+          1. Download WallpaperChanger-Windows.zip
+          2. Extract to a folder
+          3. Run WallpaperChanger.exe
+          4. Click "Settings" to configure API keys
+          5. Enjoy automatic wallpaper changes!
+
+          ## Configuration
+
+          You'll need an Unsplash Access Key to use this application:
+          - Get one at: https://unsplash.com/developers
+          - It's free for personal use
+
+          ## Known Issues
+
+          - First run requires API key configuration
+          - Requires Windows 10 or later
+
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

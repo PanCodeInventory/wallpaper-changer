@@ -166,10 +166,6 @@ class WallpaperSetter:
         )
 
 
-# 添加 FILL 到样式枚举（与 CROP 相同）
-WallpaperStyle.FILL = WallpaperStyle.CROP
-
-
 def set_wallpaper(image_path: str, style: str = "fill") -> bool:
     """
     便捷函数：设置壁纸
