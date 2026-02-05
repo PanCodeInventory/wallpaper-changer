@@ -1,10 +1,10 @@
 """
 屏幕信息工具
-使用 PyQt5 获取屏幕信息，避免 tkinter 依赖问题
+使用 PyQt5 获取屏幕信息（避免 tkinter 依赖）
 """
 
 import platform
-from typing import Tuple, List, Optional
+from typing import List, Tuple, Optional
 
 
 class ScreenInfo:
@@ -86,7 +86,7 @@ class ScreenInfo:
             except:
                 return 96  # 默认 DPI
         else:
-            return 96
+            return 96  # 非 Windows 平台默认 DPI
 
     @staticmethod
     def get_scale_factor() -> float:
@@ -124,11 +124,12 @@ class ScreenInfo:
             else:
                 # 推荐原始分辨率
                 pass
-        else:
-            # 使用用户自定义分辨率
+        elif mode == "custom":
+            # 使用用户自定义分辨率（从配置读取）
             pass
 
-        return width, height
+        # 返回计算后的值
+        return (width, height)
 
     @staticmethod
     def format_resolution(width: int, height: int) -> str:

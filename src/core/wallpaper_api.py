@@ -1,6 +1,7 @@
 """
 壁纸 API 集成
 支持 Unsplash 和 Wallhaven
+按照 Unsplash API 规范正确获取高分辨率图片
 """
 
 import requests
@@ -20,7 +21,7 @@ class WallpaperAPI:
 
 
 class UnsplashAPI(WallpaperAPI):
-    """Unsplash API"""
+    """Unsplash API - 按照官方规范获取高分辨率图片"""
 
     def __init__(self, access_key: str):
         super().__init__()
@@ -29,6 +30,63 @@ class UnsplashAPI(WallpaperAPI):
         self.session.headers.update({
             'Authorization': f'Client-ID {access_key}'
         })
+
+    def _build_resolution_url(self, image: Dict, width: int, height: int, prefer_higher: bool = True) -> str:
+        """
+        根据 Unsplash 规范构建高分辨率 URL
+
+        Unsplash API 文档：
+        - 使用 raw URL 作为基础（只有 ixid 参数）
+        - 添加动态参数：w, h, dpr, q, fit
+
+        参数说明：
+        - w: 宽度（像素）
+        - h: 高度（像素）
+        - dpr: 设备像素比（1, 2, 3 等）
+        - q: 质量压缩（1-100，越高越好）
+        - fit: 适应方式（max=适应，crop=裁剪，clip=裁剪扩展）
+        - fm: 格式（jpg, png, webp）
+
+        Args:
+            image: Unsplash API 返回的图片对象
+            width: 目标宽度
+            height: 目标高度
+            prefer_higher: 是否偏好更高分辨率（使用 DPR=2）
+
+        Returns:
+            高分辨率图片 URL
+        """
+        # 获取 raw URL 作为基础
+        raw_url = image['urls']['raw']
+
+        # 构建查询参数
+        params = []
+
+        # 添加宽度和高度
+        params.append(f"w={width}")
+        params.append(f"h={height}")
+
+        # 添加 DPR（设备像素比），支持高分屏
+        if prefer_higher:
+            dpr = 2  # 2 倍分辨率，适合高分屏
+        else:
+            dpr = 1
+        params.append(f"dpr={dpr}")
+
+        # 添加质量参数（越高越好，但文件越大）
+        params.append("q=95")
+
+        # 添加适应方式（max=适应，不裁剪）
+        params.append("fit=max")
+
+        # 添加格式（使用 jpg）
+        params.append("fm=jpg")
+
+        # 组合 URL
+        separator = '&' if '?' in raw_url else '?'
+        high_res_url = f"{raw_url}{separator}{'&'.join(params)}"
+
+        return high_res_url
 
     def fetch_random(self, query: str = None, count: int = 10,
                      orientation: str = 'landscape') -> List[Dict]:
@@ -62,9 +120,11 @@ class UnsplashAPI(WallpaperAPI):
 
             return [{
                 'id': img['id'],
-                'url': img['urls']['regular'],
+                # 使用 full URL（最大尺寸）
+                'url': img['urls']['full'],
                 'full_url': img['urls']['full'],
                 'download_url': img['links']['download'],
+                'raw_url': img['urls']['raw'],  # 保存 raw URL 用于构建自定义分辨率
                 'author': img['user']['name'],
                 'description': img.get('description') or img.get('alt_description', ''),
                 'width': img['width'],
@@ -107,9 +167,10 @@ class UnsplashAPI(WallpaperAPI):
 
             return [{
                 'id': img['id'],
-                'url': img['urls']['regular'],
+                'url': img['urls']['full'],
                 'full_url': img['urls']['full'],
                 'download_url': img['links']['download'],
+                'raw_url': img['urls']['raw'],
                 'author': img['user']['name'],
                 'description': img.get('description') or img.get('alt_description', ''),
                 'width': img['width'],
@@ -120,6 +181,29 @@ class UnsplashAPI(WallpaperAPI):
         except Exception as e:
             print(f"Unsplash search error: {e}")
             return []
+
+    def get_high_resolution_url(self, image: Dict, target_width: int, target_height: int,
+                                prefer_higher: bool = True) -> str:
+        """
+        根据用户配置获取高分辨率图片 URL
+
+        这是 Unsplash API 推荐的做法 - 使用动态参数而不是固定的尺寸 URL
+
+        Args:
+            image: Unsplash API 返回的图片对象
+            target_width: 目标屏幕宽度
+            target_height: 目标屏幕高度
+            prefer_higher: 是否使用 DPR=2（推荐用于高分屏）
+
+        Returns:
+            高分辨率图片 URL
+        """
+        return self._build_resolution_url(
+            image,
+            target_width,
+            target_height,
+            prefer_higher
+        )
 
 
 class WallhavenAPI(WallpaperAPI):

@@ -339,8 +339,32 @@ class MainWindow(QMainWindow):
 
             image = images[0]
 
+            # 🔥 关键修复：根据 Unsplash API 规范获取高分辨率 URL
+            # Unsplash API 返回多个尺寸：
+            # - regular: 1080px 宽度（我们之前用的，导致模糊）
+            # - full: 最大尺寸（应该使用这个）
+            # - 支持动态调整：w, h, dpr, q, fit, fm
+
+            # 使用 API 方法获取高分辨率 URL
+            width, height = ScreenInfo.recommend_resolution(
+                mode=self.config.get_resolution_mode(),
+                prefer_higher=self.config.prefer_higher_resolution()
+            )
+
+            high_res_url = api.get_high_resolution_url(
+                image,
+                target_width=width,
+                target_height=height
+            )
+
+            # 更新 image 字典中的 URL（使用高分辨率）
+            image['url'] = high_res_url
+            image['high_res_url'] = high_res_url
+
+            self.statusBar.showMessage(f"已获取高分辨率图片: {width}x{height}")
+
             # 下载
-            local_path = self.downloader.download(image['url'], image)
+            local_path = self.downloader.download(high_res_url, image)
             if not local_path:
                 self.statusBar.showMessage("下载壁纸失败")
                 QMessageBox.warning(self, "下载失败", "壁纸下载失败，请重试。")
