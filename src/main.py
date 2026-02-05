@@ -7,17 +7,13 @@ import sys
 import os
 from pathlib import Path
 
-# PyInstaller hack: Get the temp folder where the bundle is unpacked
-if getattr(sys, 'frozen', False):
-    # Running as a PyInstaller bundle
-    bundle_dir = Path(sys._MEIPASS)
-    src_dir = bundle_dir / 'src'
-else:
-    # Running in normal Python environment
-    src_dir = Path(__file__).parent
+# Add current directory to sys.path (fixes import issues in PyInstaller)
+current_dir = Path(__file__).parent
+sys.path.insert(0, str(current_dir))
 
-# Add src directory to Python path
-sys.path.insert(0, str(src_dir))
+# If running from PyInstaller bundle, also add MEIPASS to path
+if getattr(sys, 'frozen', False):
+    sys.path.insert(0, sys._MEIPASS)
 
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import Qt

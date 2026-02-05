@@ -29,7 +29,7 @@ jobs:
 
     - name: Build with PyInstaller
       run: |
-        pyinstaller --onefile --windowed --name=WallpaperChanger --clean --noconfirm --add-data "src;src" src/main.py
+        pyinstaller --onefile --windowed --name=WallpaperChanger --clean --noconfirm --paths src src/main.py
 
     - name: Test built executable
       run: |
@@ -81,10 +81,9 @@ jobs:
           ## What's Changed
 
           This release fixes critical module import issues:
-          - Fixed PyInstaller path handling
-          - Properly added src directory to Python path
-          - Added sys._MEIPASS support for frozen apps
-          - Improved error handling
+          - Fixed PyInstaller path handling with --paths parameter
+          - Added src directory to PyInstaller search paths
+          - Improved module resolution for frozen apps
 
           ## Usage
 
@@ -107,9 +106,9 @@ jobs:
 
           ## Changelog
 
-          ### v0.2.1 (2026-02-05)
-          - Fixed ModuleNotFoundError for ui module
-          - Fixed PyInstaller packaging for frozen apps
-          - Improved path handling for both frozen and normal modes
+          ### v0.2.2 (2026-02-05)
+          - Fixed ModuleNotFoundError for ui module (hopefully final fix)
+          - Changed PyInstaller to use --paths instead of --add-data
+          - Simplified path handling approach
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
