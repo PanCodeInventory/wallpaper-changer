@@ -26,7 +26,7 @@ jobs:
 
     - name: Build with PyInstaller
       run: |
-        pyinstaller --onefile --windowed --name=WallpaperChanger --icon=resources/icons/icon.ico src/main.py
+        pyinstaller --onefile --windowed --name=WallpaperChanger src/main.py
 
     - name: Create release package
       run: |
