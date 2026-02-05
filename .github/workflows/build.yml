@@ -29,7 +29,7 @@ jobs:
 
     - name: Build with PyInstaller
       run: |
-        pyinstaller --onefile --windowed --name=WallpaperChanger --clean --noconfirm --paths src --hidden-import platform src/main.py
+        pyinstaller --onefile --windowed --name=WallpaperChanger --clean --noconfirm --paths src --hidden-import platform --hidden-import sys --hidden-import os --hidden-import json --hidden-import random --hidden-import hashlib --hidden-import time --hidden-import ctypes src/main.py
 
     - name: Test built executable
       run: |
