@@ -4,6 +4,13 @@ Wallpaper Changer - 主程序入口
 """
 
 import sys
+import os
+from pathlib import Path
+
+# 添加 src 目录到 Python 路径
+src_dir = Path(__file__).parent
+sys.path.insert(0, str(src_dir))
+
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import Qt
 

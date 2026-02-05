@@ -27,29 +27,29 @@ def test_imports():
     print("=" * 50)
 
     try:
-        print("✓ PyQt5")
+        print("[OK] PyQt5")
         from PyQt5.QtWidgets import QApplication
         from PyQt5.QtCore import Qt
 
-        print("✓ Config")
+        print("[OK] Config")
         from models.config import Config
 
-        print("✓ ScreenInfo")
+        print("[OK] ScreenInfo")
         from utils.screen_info import ScreenInfo
 
-        print("✓ WallpaperAPI")
+        print("[OK] WallpaperAPI")
         from core.wallpaper_api import UnsplashAPI, WallhavenAPI
 
-        print("✓ WallpaperDownloader")
+        print("[OK] WallpaperDownloader")
         from core.wallpaper_downloader import WallpaperDownloader
 
-        print("✓ WallpaperSetter")
+        print("[OK] WallpaperSetter")
         from core.wallpaper_setter import WallpaperSetter, WallpaperStyle
 
-        print("✓ Scheduler")
+        print("[OK] Scheduler")
         from core.scheduler import WallpaperScheduler
 
-        print("\n所有模块导入成功！\n")
+        print("\nAll modules imported successfully!\n")
         return True
 
     except Exception as e:
@@ -74,11 +74,11 @@ def test_config():
         print(f"壁纸源: {config.get_sources()}")
         print(f"缓存最大大小: {config.get_cache_max_size()} MB")
 
-        print("✓ 配置管理测试通过\n")
+        print("[OK] Config test passed\n")
         return True
 
     except Exception as e:
-        print(f"✗ 配置管理测试失败: {e}\n")
+        print(f"[FAIL] Config test failed: {e}\n")
         return False
 
 
@@ -107,11 +107,11 @@ def test_screen_info():
         formatted = ScreenInfo.format_resolution(width, height)
         print(f"格式化: {formatted}")
 
-        print("✓ 屏幕信息测试通过\n")
+        print("[OK] ScreenInfo test passed\n")
         return True
 
     except Exception as e:
-        print(f"✗ 屏幕信息测试失败: {e}")
+        print(f"[FAIL] ScreenInfo test failed: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -135,11 +135,11 @@ def test_downloader():
         print(f"缓存大小: {downloader.get_cache_size()}")
         print(f"缓存的壁纸数: {len(downloader.get_cached_wallpapers())}")
 
-        print("✓ 下载器测试通过\n")
+        print("[OK] Downloader test passed\n")
         return True
 
     except Exception as e:
-        print(f"✗ 下载器测试失败: {e}")
+        print(f"[FAIL] Downloader test failed: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -147,7 +147,7 @@ def test_downloader():
 
 def main():
     """主函数"""
-    print("\n🚀 开始测试核心功能\n")
+    print("\n[START] 开始测试核心功能\n")
 
     # 创建 QApplication（测试 GUI 需要）
     from PyQt5.QtWidgets import QApplication
@@ -165,10 +165,10 @@ def main():
 
     print("=" * 50)
     if all(results):
-        print("✅ 所有测试通过！")
+        print("[SUCCESS] All tests passed!")
         print("=" * 50)
     else:
-        print("❌ 部分测试失败")
+        print("[FAILED] Some tests failed")
         print("=" * 50)
         sys.exit(1)
 
