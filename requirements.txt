@@ -4,3 +4,4 @@ Pillow>=9.0.0
 pywin32>=305; sys_platform == 'win32'
 schedule>=1.2.0
 pyinstaller>=5.0.0
+
