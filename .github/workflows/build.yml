@@ -1,0 +1,48 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Build with PyInstaller
+      run: |
+        pyinstaller --onefile --windowed --name=WallpaperChanger --icon=resources/icons/icon.ico src/main.py
+
+    - name: Create release package
+      run: |
+        mkdir release
+        cp dist/WallpaperChanger.exe release/
+        cp README.md release/
+        cp config.json release/
+        Compress-Archive -Path release/* -DestinationPath WallpaperChanger-Windows.zip
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: WallpaperChanger-Windows.zip
+        draft: false
+        prerelease: false
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

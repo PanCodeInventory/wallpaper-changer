@@ -1,0 +1,19 @@
+{
+  "update_frequency": "daily",
+  "update_time": "12:00",
+  "resolution": {
+    "mode": "auto",
+    "custom_width": 1920,
+    "custom_height": 1080,
+    "prefer_higher": true
+  },
+  "sources": ["unsplash", "wallhaven"],
+  "categories": ["nature", "architecture", "minimal"],
+  "cache": {
+    "enabled": true,
+    "max_size_mb": 500,
+    "max_images": 50
+  },
+  "wallpaper_mode": "fill",
+  "auto_start": true
+}
