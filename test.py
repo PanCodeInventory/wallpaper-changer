@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 """
-简单的功能测试脚本
-不依赖 tkinter，使用 PyQt5
+Simple functionality test script
+No tkinter dependency, uses PyQt5
 """
 
 import sys
 import platform
 
-# 检查平台
+# Check platform
 if platform.system() != 'Windows':
-    print("此应用仅支持 Windows 平台")
+    print("This application only supports Windows platform")
     sys.exit(1)
 
-# 添加 src 目录到路径
+# Add src directory to path
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent / 'src'))
 
@@ -21,9 +21,9 @@ from utils.screen_info import ScreenInfo
 
 
 def test_imports():
-    """测试导入"""
+    """Test imports"""
     print("=" * 50)
-    print("测试模块导入")
+    print("Testing Module Imports")
     print("=" * 50)
 
     try:
@@ -53,59 +53,61 @@ def test_imports():
         return True
 
     except Exception as e:
-        print(f"\n导入失败: {e}")
+        print(f"\nImport failed: {e}")
         import traceback
         traceback.print_exc()
         return False
 
 
 def test_config():
-    """测试配置管理"""
+    """Test configuration"""
     print("=" * 50)
-    print("测试配置管理")
+    print("Testing Configuration")
     print("=" * 50)
 
     try:
         config = Config()
 
-        print(f"更新频率: {config.get_update_frequency()}")
-        print(f"更新时间: {config.get_update_time()}")
-        print(f"分辨率模式: {config.get_resolution_mode()}")
-        print(f"壁纸源: {config.get_sources()}")
-        print(f"缓存最大大小: {config.get_cache_max_size()} MB")
+        print(f"Update frequency: {config.get_update_frequency()}")
+        print(f"Update time: {config.get_update_time()}")
+        print(f"Resolution mode: {config.get_resolution_mode()}")
+        print(f"Sources: {config.get_sources()}")
+        print(f"Cache max size: {config.get_cache_max_size()} MB")
 
         print("[OK] Config test passed\n")
         return True
 
     except Exception as e:
         print(f"[FAIL] Config test failed: {e}\n")
+        import traceback
+        traceback.print_exc()
         return False
 
 
 def test_screen_info():
-    """测试屏幕信息"""
+    """Test screen info"""
     print("=" * 50)
-    print("测试屏幕信息")
+    print("Testing Screen Info")
     print("=" * 50)
 
     try:
-        # 需要创建 QApplication
+        # Need to create QApplication
         from PyQt5.QtWidgets import QApplication
         app = QApplication.instance()
         if app is None:
             app = QApplication([])
 
         width, height = ScreenInfo.get_screen_resolution()
-        print(f"屏幕分辨率: {width}x{height}")
+        print(f"Screen resolution: {width}x{height}")
 
         dpi = ScreenInfo.get_dpi()
         print(f"DPI: {dpi}")
 
         scale = ScreenInfo.get_scale_factor()
-        print(f"缩放因子: {scale}")
+        print(f"Scale factor: {scale}")
 
         formatted = ScreenInfo.format_resolution(width, height)
-        print(f"格式化: {formatted}")
+        print(f"Formatted: {formatted}")
 
         print("[OK] ScreenInfo test passed\n")
         return True
@@ -118,9 +120,9 @@ def test_screen_info():
 
 
 def test_downloader():
-    """测试下载器"""
+    """Test downloader"""
     print("=" * 50)
-    print("测试下载器")
+    print("Testing Downloader")
     print("=" * 50)
 
     try:
@@ -131,9 +133,9 @@ def test_downloader():
             max_images=50
         )
 
-        print(f"缓存目录: {cache_dir}")
-        print(f"缓存大小: {downloader.get_cache_size()}")
-        print(f"缓存的壁纸数: {len(downloader.get_cached_wallpapers())}")
+        print(f"Cache directory: {cache_dir}")
+        print(f"Cache size: {downloader.get_cache_size()}")
+        print(f"Cached wallpapers: {len(downloader.get_cached_wallpapers())}")
 
         print("[OK] Downloader test passed\n")
         return True
@@ -146,16 +148,16 @@ def test_downloader():
 
 
 def main():
-    """主函数"""
-    print("\n[START] 开始测试核心功能\n")
+    """Main function"""
+    print("\n[START] Testing core functionality\n")
 
-    # 创建 QApplication（测试 GUI 需要）
+    # Create QApplication (needed for GUI tests)
     from PyQt5.QtWidgets import QApplication
     app = QApplication.instance()
     if app is None:
         app = QApplication([])
 
-    # 运行测试
+    # Run tests
     results = []
 
     results.append(test_imports())
