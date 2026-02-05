@@ -4,20 +4,32 @@
 
 import sys
 import random
+import platform
 from pathlib import Path
 from PyQt5.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
                              QPushButton, QLabel, QSystemTrayIcon, QMenu, QAction,
                              QStatusBar, QMessageBox, QInputDialog, QComboBox,
-                             QSpinBox, QDateTimeEdit, QCheckBox, QGroupBox,
+                             QSpinBox, QTimeEdit, QCheckBox, QGroupBox,
                              QFormLayout, QLineEdit, QDialog, QDialogButtonBox)
-from PyQt5.QtCore import Qt, QTimer, QDateTime
+from PyQt5.QtCore import Qt, QTimer, QTime
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtCore import QSize
+from PyQt5.QtWidgets import QDesktopWidget
 
 from models.config import Config
 from core.wallpaper_api import UnsplashAPI, WallhavenAPI
 from core.wallpaper_downloader import WallpaperDownloader
-from core.wallpaper_setter import WallpaperSetter, WallpaperStyle
+
+# Windows特定导入
+if platform.system() == 'Windows':
+    from core.wallpaper_setter import WallpaperSetter, WallpaperStyle
+else:
+    # 非Windows平台的占位符
+    class WallpaperSetter:
+        pass
+    class WallpaperStyle:
+        pass
+
 from core.scheduler import WallpaperScheduler
 from utils.screen_info import ScreenInfo
 
@@ -130,6 +142,16 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
+
+        # 检查平台
+        if platform.system() != 'Windows':
+            QMessageBox.critical(
+                self,
+                "平台不支持",
+                "此应用仅支持 Windows 平台。"
+            )
+            sys.exit(1)
+
         self.init_components()
         self.init_ui()
         self.init_tray()
@@ -141,6 +163,8 @@ class MainWindow(QMainWindow):
 
         # 下载器
         cache_dir = Path(__file__).parent.parent.parent / "cache"
+        cache_dir.mkdir(parents=True, exist_ok=True)
+
         self.downloader = WallpaperDownloader(
             cache_dir=str(cache_dir),
             max_size_mb=self.config.get_cache_max_size(),
@@ -197,14 +221,12 @@ class MainWindow(QMainWindow):
 
         # 壁纸预览区域
         self.preview_label = QLabel("壁纸预览")
-        self.preview_label.setStyleSheet("font-size: 16px; margin-bottom: 10px;")
-        self.preview_label.setAlignment(Qt.AlignCenter)
-        self.preview_label.setMinimumHeight(400)
         self.preview_label.setStyleSheet("""
             background-color: #f0f0f0;
             border: 2px dashed #ccc;
             border-radius: 10px;
         """)
+        self.preview_label.setMinimumHeight(400)
         self.preview_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.preview_label)
 
@@ -243,11 +265,8 @@ class MainWindow(QMainWindow):
         """获取信息文本"""
         width, height = ScreenInfo.get_screen_resolution()
         cache_size = self.downloader.get_cache_size()
-        next_run = self.scheduler.get_next_run_time()
 
         info = f"屏幕: {width}x{height} | 缓存: {cache_size}"
-        if next_run:
-            info += f" | 下次更新: {next_run.strftime('%H:%M')}"
 
         return info
 
@@ -279,6 +298,11 @@ class MainWindow(QMainWindow):
         """更换壁纸"""
         if not self.apis:
             self.statusBar.showMessage("请先配置 API 密钥")
+            QMessageBox.information(
+                self,
+                "配置提示",
+                "请先在设置中配置 API 密钥才能使用。\n\nUnsplash Access Key 可以在 https://unsplash.com/developers 获取。"
+            )
             return
 
         try:
@@ -306,6 +330,11 @@ class MainWindow(QMainWindow):
 
             if not images:
                 self.statusBar.showMessage("获取壁纸失败")
+                QMessageBox.warning(
+                    self,
+                    "获取失败",
+                    f"无法从 {api_name} 获取壁纸。\n请检查网络连接和 API 密钥。"
+                )
                 return
 
             image = images[0]
@@ -314,6 +343,7 @@ class MainWindow(QMainWindow):
             local_path = self.downloader.download(image['url'], image)
             if not local_path:
                 self.statusBar.showMessage("下载壁纸失败")
+                QMessageBox.warning(self, "下载失败", "壁纸下载失败，请重试。")
                 return
 
             # 设置壁纸
@@ -327,12 +357,14 @@ class MainWindow(QMainWindow):
                 # 更新预览
                 self._update_preview(local_path)
 
-                self.statusBar.showMessage(f"壁纸已更新: {image['description']}")
+                self.statusBar.showMessage(f"壁纸已更新: {image['description'][:50]}...")
             else:
                 self.statusBar.showMessage("设置壁纸失败")
+                QMessageBox.warning(self, "设置失败", "壁纸设置失败。")
 
         except Exception as e:
             self.statusBar.showMessage(f"错误: {str(e)}")
+            QMessageBox.critical(self, "错误", f"发生错误:\n{str(e)}")
 
     def _update_preview(self, image_path: str):
         """更新预览"""
@@ -398,6 +430,11 @@ class MainWindow(QMainWindow):
 
         if not self.apis:
             self.statusBar.showMessage("请先配置 API 密钥")
+            QMessageBox.information(
+                self,
+                "配置提示",
+                "请先在设置中配置 API 密钥才能使用。"
+            )
             return
 
         try:
@@ -411,16 +448,18 @@ class MainWindow(QMainWindow):
             self.statusBar.showMessage(f"正在从 {api_name} 下载壁纸...")
 
             if api_name == 'unsplash':
-                images = api.fetch_random(query=category, count=5)
+                images = api.fetch_random(query=category, count=3)
             else:
-                images = api.fetch_random(count=5)
+                images = api.fetch_random(count=3)
 
             if images:
                 # 下载所有图片
+                downloaded = 0
                 for image in images:
-                    self.downloader.download(image['url'], image)
+                    if self.downloader.download(image['url'], image):
+                        downloaded += 1
 
-                self.statusBar.showMessage(f"已下载 {len(images)} 张壁纸")
+                self.statusBar.showMessage(f"已下载 {downloaded} 张壁纸")
             else:
                 self.statusBar.showMessage("获取壁纸失败")
 
@@ -435,7 +474,3 @@ class MainWindow(QMainWindow):
         else:
             self.scheduler.stop()
             event.accept()
-
-
-# 修复导入
-from PyQt5.QtCore import QTime

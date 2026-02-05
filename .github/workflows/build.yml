@@ -27,9 +27,32 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
+    - name: Run tests
+      run: |
+        python test.py
+
     - name: Build with PyInstaller
       run: |
-        pyinstaller --onefile --windowed --name=WallpaperChanger src/main.py
+        pyinstaller --onefile --windowed --name=WallpaperChanger --clean --noconfirm src/main.py
+
+    - name: Test built executable
+      run: |
+        dir dist
+        echo "Testing if exe exists and is not corrupted..."
+        if (Test-Path "dist\WallpaperChanger.exe") {
+          echo "EXE file exists"
+          $fileSize = (Get-Item "dist\WallpaperChanger.exe").Length
+          echo "EXE size: $fileSize bytes"
+          if ($fileSize -gt 10000000) {
+            echo "EXE size looks reasonable (>10MB)"
+          } else {
+            Write-Error "EXE size too small, likely incomplete"
+            exit 1
+          }
+        } else {
+          Write-Error "EXE file not found"
+          exit 1
+        }
 
     - name: Create release package
       run: |
@@ -38,6 +61,17 @@ jobs:
         cp README.md release/
         cp config.json release/
         Compress-Archive -Path release/* -DestinationPath WallpaperChanger-Windows.zip
+
+    - name: Check zip file
+      run: |
+        if (Test-Path "WallpaperChanger-Windows.zip") {
+          echo "ZIP file created successfully"
+          $zipSize = (Get-Item "WallpaperChanger-Windows.zip").Length
+          echo "ZIP size: $zipSize bytes"
+        } else {
+          Write-Error "ZIP file not found"
+          exit 1
+        }
 
     - name: Create Release
       uses: softprops/action-gh-release@v1

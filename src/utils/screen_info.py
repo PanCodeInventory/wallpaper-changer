@@ -1,9 +1,10 @@
 """
 屏幕信息工具
+使用 PyQt5 获取屏幕信息，避免 tkinter 依赖问题
 """
 
-import ctypes
-from typing import List, Tuple, Optional
+import platform
+from typing import Tuple, List, Optional
 
 
 class ScreenInfo:
@@ -18,13 +19,21 @@ class ScreenInfo:
             (宽度, 高度)
         """
         try:
-            import tkinter as tk
-            root = tk.Tk()
-            width = root.winfo_screenwidth()
-            height = root.winfo_screenheight()
-            root.destroy()
+            from PyQt5.QtWidgets import QApplication, QDesktopWidget
+
+            # 创建 QApplication 实例（如果不存在）
+            app = QApplication.instance()
+            if app is None:
+                app = QApplication([])
+
+            screen = QDesktopWidget().screenGeometry()
+            width = screen.width()
+            height = screen.height()
+
             return width, height
-        except:
+
+        except Exception as e:
+            print(f"Error getting screen resolution: {e}")
             # 默认返回 1920x1080
             return 1920, 1080
 
@@ -37,19 +46,24 @@ class ScreenInfo:
             屏幕分辨率列表 [(宽度, 高度), ...]
         """
         try:
-            import tkinter as tk
-            root = tk.Tk()
+            from PyQt5.QtWidgets import QApplication, QDesktopWidget
+
+            app = QApplication.instance()
+            if app is None:
+                app = QApplication([])
+
+            desktop = QDesktopWidget()
+            screen_count = desktop.screenCount()
 
             screens = []
-            num_screens = root.winfo_screens()
+            for i in range(screen_count):
+                screen = desktop.screenGeometry(i)
+                screens.append((screen.width(), screen.height()))
 
-            for i in range(num_screens):
-                # 注意：这里简化处理，实际可能需要更复杂的方法
-                screens.append(root.winfo_screenwidth(), root.winfo_screenheight())
-
-            root.destroy()
             return screens
-        except:
+
+        except Exception as e:
+            print(f"Error getting all screens: {e}")
             # 默认返回一个屏幕
             return [(1920, 1080)]
 
@@ -61,14 +75,18 @@ class ScreenInfo:
         Returns:
             DPI 值
         """
-        try:
-            user32 = ctypes.windll.user32
-            hdc = user32.GetDC(0)
-            dpi = user32.GetDeviceCaps(hdc, 88)  # LOGPIXELSX
-            user32.ReleaseDC(0, hdc)
-            return dpi
-        except:
-            return 96  # 默认 DPI
+        if platform.system() == 'Windows':
+            try:
+                import ctypes
+                user32 = ctypes.windll.user32
+                hdc = user32.GetDC(0)
+                dpi = user32.GetDeviceCaps(hdc, 88)  # LOGPIXELSX
+                user32.ReleaseDC(0, hdc)
+                return dpi
+            except:
+                return 96  # 默认 DPI
+        else:
+            return 96
 
     @staticmethod
     def get_scale_factor() -> float:
